@@ -56,6 +56,7 @@ public class OverlayCoverView extends ShapeDrawable {
         
         // check if to draw the regular overlay cover
         if (overlay.getConfiguration().getCover() == null
+        		|| overlay.getConfiguration().getCover().getOverlayCoverType() == OverlayCoverType.CENTROID
         		|| overlay.getConfiguration().getCover().getOverlayCoverType() == OverlayCoverType.IMAGE
         		|| overlay.getConfiguration().getCover().getOverlayCoverType() == OverlayCoverType.HIDE) {
         	// fillpaint.setColor(Color.TRANSPARENT);

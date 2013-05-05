@@ -171,6 +171,83 @@ public class OverlayViewFactory {
 			}
 		}
 	}
+	public class CentroidCreator implements OverlayViewCreator {
+
+		@SuppressWarnings("deprecation")
+		@Override
+		public void createOverlayView(Activity context,
+				OverlayView overlayview, ImageOverlayInfo overlay,
+				boolean showpopup, boolean showFadeAnimation, float xscale, float yscale) {
+
+			ImageView view = new ImageView(context);
+			view.setAdjustViewBounds(true);
+			view.setScaleType(ScaleType.FIT_XY);
+			view.setBackgroundDrawable(new OverlayCoverView(overlay));
+
+			String imgres = overlay.getConfiguration().getCover().getProvider();
+			if (imgres.startsWith("http")) {
+				UrlImageViewHelper.setUrlDrawable(view, imgres,
+						android.R.drawable.spinner_background);
+			} else {
+				// TODO: To support image file path URI e.g., file:///
+				int res = context.getResources().getIdentifier(imgres,
+						"drawable", context.getPackageName());
+				view.setImageResource(res);
+			}
+
+			RelativeLayout.LayoutParams params = null;
+//			if (imgres.endsWith("no-scale")) {
+				params = new RelativeLayout.LayoutParams(
+						LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				
+				double area = getArea(overlay,xscale);
+				double radius = Math.sqrt(area);
+				//radius = (radius < 20)? 20 : radius;
+				
+				Display display = context.getWindowManager().getDefaultDisplay();
+				int max = Math.max(display.getWidth(),display.getHeight());
+				radius = (((float)max)/8);
+				
+				RelativeLayout.LayoutParams pulseparams = new RelativeLayout.LayoutParams(
+						(int)Math.rint(radius), (int)Math.rint(radius));
+				
+				ImageOverlayInfo pinfo = overlay.clone();
+				String provider = pinfo.getConfiguration().getCover().getProvider();
+//				if(provider.indexOf("#offset[") > -1){
+//					provider = OverlayView.removeProviderParam(overlay, "offset");
+					pinfo.getConfiguration().getCover().setProvider(provider);
+					pinfo.getConfiguration().getCover().setOffset("0,0");
+//				}
+				ImageView v = new ImageView(context);
+				v.setImageDrawable(context.getResources().getDrawable(R.drawable.pulsar));
+				Animation a = AnimationUtils.loadAnimation(context, R.anim.pulsate_animation);
+				v.startAnimation(a);
+				overlayview.addOverlay(pinfo, v, pulseparams);
+//			} else {
+//				params = new RelativeLayout.LayoutParams(
+//						LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+//			}
+			overlayview.addOverlay(overlay, view, params);
+
+			// retrieve the overlay title
+			String popupcon = overlay.getConfiguration().getTitle();
+			// show the title popup only when it is specified
+			if (showpopup && popupcon != null && !TextUtils.isEmpty(popupcon)) {
+				View pop = context.getLayoutInflater().inflate(R.layout.popup,
+						null);
+				((TextView) pop.findViewById(R.id.arPopupContent))
+						.setText(popupcon);
+
+				// potential format configuration for text here
+				// pop.setBackgroundResource(R.drawable.popup);
+				// pop.setText(overlay.getContent());
+				// pop.setTextSize(24);
+
+				overlayview.setPopup(overlay, view, pop);
+			}
+		}
+		
+	}
 
 	private Map<OverlayCoverType, OverlayViewCreator> mCreators = new EnumMap<OverlayCoverType, OverlayViewCreator>(
 			OverlayCoverType.class);
@@ -180,6 +257,7 @@ public class OverlayViewFactory {
 		mCreators.put(OverlayCoverType.REGULAR, rect);
 		mCreators.put(OverlayCoverType.HIDE, rect);
 		mCreators.put(OverlayCoverType.IMAGE, new ImageCreator());
+		mCreators.put(OverlayCoverType.CENTROID, new CentroidCreator());
 	}
 
 	public void createOverlayView(Activity context, OverlayView overlayview,

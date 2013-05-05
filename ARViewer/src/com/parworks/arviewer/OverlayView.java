@@ -91,12 +91,14 @@ public class OverlayView extends RelativeLayout {
 
 		public OverlayCentroidTransform(ImageOverlayInfo overlay, float xscale,
 				float yscale, int w, int h, int iw, int ih) {
+//			Log.d(TAG,"OverlayCentroidTransform" + overlay.getName() + " : " + overlay.getId());
 
 			OverlayPoint p1 = overlay.getPoints().get(0);
 			OverlayPoint p2 = overlay.getPoints().get(1);
 			OverlayPoint p3 = overlay.getPoints().get(2);
 
 			int[] offs = getOverlayImageOffset(overlay);
+//			Log.d(TAG,"OverlayCentroidTransform offsets: " + offs[0]+","+offs[1]);
 			// TODO: The current transformation does not
 			// work well for Overlays with 3 points or
 			// more than 4 points.
@@ -149,13 +151,19 @@ public class OverlayView extends RelativeLayout {
 
 		private int[] getOverlayImageOffset(ImageOverlayInfo overlay) {
 			int[] offs = new int[2];
-
+			
 			String offstr = getProviderParam(overlay, "offset");
+//			Log.d(TAG,"Offset from getProviderParam: " + offstr);
+			if(offstr == null) {
+				offstr = overlay.getConfiguration().getCover().getOffset();
+			} 
 			try {
 				if (offstr != null) {
-					String[] off = offstr.split(",");
-					offs[0] = Integer.parseInt(off[0]);
-					offs[1] = Integer.parseInt(off[1]);
+					if(!offstr.isEmpty()) {
+						String[] off = offstr.split(",");
+						offs[0] = Integer.parseInt(off[0]);
+						offs[1] = Integer.parseInt(off[1]);
+					}
 				}
 			} catch (Exception e) {
 				Log.e(TAG, "Malformed cover image offset spec", e);
@@ -346,8 +354,11 @@ public class OverlayView extends RelativeLayout {
 				}
 
 				OverlayCover content = i.getConfiguration().getCover();
-				if (content.getType().equalsIgnoreCase("IMAGE")
-						&& content.getProvider().endsWith("#no-scale")) {
+//				Log.d(TAG,"content type is: " + content.getType());
+//				Log.d(TAG,"name is: " + i.getId() + " : " + i.getConfiguration().getTitle());
+//				Log.d(TAG,"offset is: " + i.getConfiguration().getCover().getOffset());
+				if (  (content.getType().equalsIgnoreCase("IMAGE")
+						&& content.getProvider().endsWith("#no-scale")) || (content.getOverlayCoverType() == OverlayCoverType.CENTROID) ) {
 					vt = new OverlayCentroidTransform(i, mXScale, mYScale,
 							child.getWidth(), child.getHeight(), offs[0],
 							offs[1]);
@@ -373,6 +384,7 @@ public class OverlayView extends RelativeLayout {
 	}
 	
 	public static String removeProviderParam(ImageOverlayInfo overlay, String param) {
+//		Log.d(TAG,"removeProviderParam");
 		String offstr = overlay.getConfiguration().getCover().getProvider();
 
 		String value = null;
@@ -387,6 +399,7 @@ public class OverlayView extends RelativeLayout {
 	}
 	
 	public static String getProviderParam(ImageOverlayInfo overlay, String param) {
+//		Log.d(TAG,"getProviderParam");
 		String offstr = overlay.getConfiguration().getCover().getProvider();
 
 		String value = null;

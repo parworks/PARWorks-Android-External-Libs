@@ -211,18 +211,33 @@ public class OverlayViewFactory {
 				RelativeLayout.LayoutParams pulseparams = new RelativeLayout.LayoutParams(
 						(int)Math.rint(radius), (int)Math.rint(radius));
 				
-				ImageOverlayInfo pinfo = overlay.clone();
-				String provider = pinfo.getConfiguration().getCover().getProvider();
-//				if(provider.indexOf("#offset[") > -1){
-//					provider = OverlayView.removeProviderParam(overlay, "offset");
-					pinfo.getConfiguration().getCover().setProvider(provider);
-					pinfo.getConfiguration().getCover().setOffset("0,0");
-//				}
 				ImageView v = new ImageView(context);
 				v.setImageDrawable(context.getResources().getDrawable(R.drawable.pulsar));
 				Animation a = AnimationUtils.loadAnimation(context, R.anim.pulsate_animation);
 				v.startAnimation(a);
-				overlayview.addOverlay(pinfo, v, pulseparams);
+				
+				
+				if(overlay.getConfiguration().getCover().getShowPulse()) {
+					ImageOverlayInfo pinfo = overlay.clone();
+					String provider = pinfo.getConfiguration().getCover().getProvider();
+					pinfo.getConfiguration().getCover().setProvider(provider);
+					pinfo.getConfiguration().getCover().setOffset("0,0");
+					overlayview.addOverlay(pinfo, v, pulseparams);
+					
+				}
+				
+//				ImageOverlayInfo pinfo = overlay.clone();
+//				String provider = pinfo.getConfiguration().getCover().getProvider();
+////				if(provider.indexOf("#offset[") > -1){
+//	//				provider = OverlayView.removeProviderParam(overlay, "offset");
+//					pinfo.getConfiguration().getCover().setProvider(provider);
+//					pinfo.getConfiguration().getCover().setOffset("0,0");
+//				}
+//				ImageView v = new ImageView(context);
+//				v.setImageDrawable(context.getResources().getDrawable(R.drawable.pulsar));
+//				Animation a = AnimationUtils.loadAnimation(context, R.anim.pulsate_animation);
+//				v.startAnimation(a);
+//				overlayview.addOverlay(pinfo, v, pulseparams);
 //			} else {
 //				params = new RelativeLayout.LayoutParams(
 //						LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);

@@ -46,6 +46,7 @@ import com.parworks.androidlibrary.ar.ARListener;
 import com.parworks.androidlibrary.ar.ARSite;
 import com.parworks.androidlibrary.ar.AugmentedData;
 import com.parworks.androidlibrary.ar.Overlay;
+import com.parworks.androidlibrary.response.photochangedetection.ChangeDetectionResultData;
 import com.parworks.arviewer.ARViewerActivity;
 import com.parworks.arviewer.utils.ImageUtils;
 
@@ -70,12 +71,17 @@ Camera.PictureCallback {
 	// The attribute name in the intent extra to specify whether to
 	// do augmentation or not
 	public static final String IS_AUGMENT_ATTR = "isAugment";
+	
+	public static final String IS_CHANGE_DETECTION_ATTR = "isChangeDetection";
 
 	private static final String IMAGE_FOLDER = "parworks";
 
 	// Whether to use this activity to do image augmentation.
 	// If not, use it to add base image
 	private boolean isAugment = true;
+	
+	//Do change detection instead
+	private boolean isChangeDetection = false;
 	// Augmented Image Id
 	private String augmentedImageId;
 
@@ -159,6 +165,7 @@ Camera.PictureCallback {
 
 			// Get the augment usage boolean; be default, we use it for augmentation
 			isAugment = getIntent().getExtras().getBoolean(IS_AUGMENT_ATTR, true);
+			isChangeDetection = getIntent().getExtras().getBoolean(IS_CHANGE_DETECTION_ATTR,false);
 
 			// requestWindowFeature(Window.FEATURE_NO_TITLE);
 			getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -546,7 +553,9 @@ Camera.PictureCallback {
 			// confirm augmentation when needed
 			if (isAugment) {
 				// alertDialog.show();
-				if (currentSiteList != null && currentSiteList.size() > 0) {
+				if(isChangeDetection) {
+					augmentForChangeDetection();
+				}else if (currentSiteList != null && currentSiteList.size() > 0) {
 					augmentMultiple();
 				} else {
 					augmentImage();
@@ -583,7 +592,10 @@ Camera.PictureCallback {
 		saveImage(new ByteArrayInputStream(data), imageFilename);
 	}
 
-	public void selectSiteThenAugment() {
+	public interface AugmentAction {
+		public void action();
+	}
+	public void selectSiteThenAugment(final AugmentAction augmentAction) {
 		// ARClient.getARSites().getUserSites(new ARListener<List<ARSite>>() {
 		//
 		// @Override
@@ -627,7 +639,7 @@ Camera.PictureCallback {
 			public void onClick(DialogInterface dialog, int which) {
 				currentSiteId = "" + spinner.getSelectedItem();
 				dialog.dismiss();
-				augmentImage();
+				augmentAction.action();
 			}
 		});
 		about.show();
@@ -727,10 +739,38 @@ Camera.PictureCallback {
 			isCameraImageButtonClicked = false;
 		}
 	}
+	
+	private void augmentForChangeDetection() {
+		if (currentSiteId == null) {
+			selectSiteThenAugment(new AugmentAction() {
+				
+				@Override
+				public void action() {
+					augmentForChangeDetection();
+					
+				}
+			});
+		} else {
+			try {
+				augmentForChangeDetection(new FileInputStream(currentImagePath));
+			} catch (IOException e) {
+				Log.w(TAG, "Failed to read the file: " + currentImagePath);
+				progressBar.dismiss();
+				resetCamera();
+			}
+		}
+	}
 
 	private void augmentImage() {
 		if (currentSiteId == null) {
-			selectSiteThenAugment();
+			selectSiteThenAugment(new AugmentAction() {
+				
+				@Override
+				public void action() {
+					augmentImage();
+					
+				}
+			});
 		} else {
 			try {
 				augmentImage(new FileInputStream(currentImagePath));
@@ -784,6 +824,58 @@ Camera.PictureCallback {
 								+ error.getMessage());
 						progressBar.dismiss();
 						resetCamera();
+					}
+				});
+			}
+		}, new ARErrorListener() {
+			@Override
+			public void handleError(Exception error) {
+				Log.w(TAG, "Failed to get existing site: "
+						+ currentSiteId);
+				resetCamera();
+			}
+		});
+
+	}
+	
+	private void augmentForChangeDetection(final InputStream img) {
+		// call to augment
+
+		ARClient.getARSites().getExisting(currentSiteId,
+				new ARListener<ARSite>() {
+			@Override
+			public void handleResponse(ARSite resp) {
+
+				Log.i(TAG, "Change detection image for " + currentSiteId);
+				progressBar.show();
+				
+				resp.sendPhotoDetectChangesAsync(img, new ARListener<ChangeDetectionResultData>() {
+					
+					@Override
+					public void handleResponse(ChangeDetectionResultData data) {
+
+						progressBar.dismiss();
+						Intent intent = new Intent(
+								CaptureImageActivity.this,
+								ARViewerActivity.class);
+						intent.putExtra("image-id",	augmentedImageId);
+						intent.putExtra("augmented-data", data.getAugmentedData());
+						intent.putExtra("show-overlay", true);
+						intent.putExtra("file-path", currentImagePath);
+						intent.putExtra("original-size", ImageUtils
+								.getImageSize(currentImagePath));
+						startActivity(intent);
+						
+					}
+				}, new ARErrorListener() {
+					
+					@Override
+					public void handleError(Exception error) {
+						Log.w(TAG, "Failed to augment the image: "
+								+ error.getMessage());
+						progressBar.dismiss();
+						resetCamera();
+						
 					}
 				});
 			}

@@ -43,6 +43,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -97,6 +98,7 @@ public class ARViewerActivity extends SherlockActivity implements View.OnClickLi
 	private ARImageView mARImageView;
 
 	private ImageButton mShareImage;
+	private ImageButton mSettingImageButton;
 	private MenuItem mShareButton;
 
 	private Point imageSize = new Point();
@@ -176,6 +178,16 @@ public class ARViewerActivity extends SherlockActivity implements View.OnClickLi
 		// share image button
 		mShareImage = (ImageButton) findViewById(R.id.shareImageButton);
 		mShareImage.setOnClickListener(this);
+		
+		mSettingImageButton = (ImageButton) findViewById(R.id.imageButtonSettingImage);
+		mSettingImageButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 
 		// Load image bitmap
 		Bitmap src = null; 

@@ -313,7 +313,7 @@ Camera.PictureCallback {
 
 		final QualitySelector qualitySelected = new QualitySelector();
 
-		final String[] jpegValues = new String[] { "70", "60", "50", "40", "30", "20" };
+		final String[] jpegValues = new String[] { "100", "70", "60", "50", "40", "30", "20" };
 		int initSelection = 0;
 		// make default selection
 		for (int i = 0; i < jpegValues.length; i++) {

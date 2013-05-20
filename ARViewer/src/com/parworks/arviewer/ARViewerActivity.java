@@ -25,7 +25,6 @@ import org.taptwo.android.widget.TitleFlowIndicator;
 import org.taptwo.android.widget.ViewFlow;
 import org.taptwo.android.widget.ViewFlow.ViewSwitchListener;
 
-import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -44,13 +43,9 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
-import android.view.WindowManager.LayoutParams;
 import android.view.WindowManager;
-import android.webkit.WebView;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
@@ -63,7 +58,6 @@ import com.parworks.androidlibrary.ar.Overlay;
 import com.parworks.androidlibrary.ar.Vertex;
 import com.parworks.androidlibrary.response.ImageOverlayInfo;
 import com.parworks.androidlibrary.response.OverlayPoint;
-import com.parworks.androidlibrary.response.OverlayContent.OverlaySize;
 import com.parworks.arviewer.utils.ImageUtils;
 
 public class ARViewerActivity extends SherlockActivity implements View.OnClickListener,
@@ -190,8 +184,7 @@ public class ARViewerActivity extends SherlockActivity implements View.OnClickLi
 			
 			@Override
 			public void onClick(View v) {
-				Log.d(TAG,"image button onClick");
-				displayImageInWebView("https://s3.amazonaws.com/hd4ar-dev-us-east-1/physical_models/Chevy-trailblazer-tire/images/1fdc6705-5d3a-42ca-9057-ec042e67db33.jpg");
+				// TODO Auto-generated method stub
 				
 			}
 		});
@@ -707,39 +700,4 @@ public class ARViewerActivity extends SherlockActivity implements View.OnClickLi
 			//this.imageBitmap.recycle();
 		}
 	}	
-	private void displayImageInWebView(String url) {
-		Dialog d = new Dialog(this,R.style.DialogSlideAnim);
-		d.requestWindowFeature(Window.FEATURE_NO_TITLE);						
-		d.setContentView(R.layout.overlay_web_dialog);
-		// use WebView for image shown in a window
-		WebView wv = new WebView(this);
-		wv.loadUrl(url);
-		configureDialogSize(d, OverlaySize.LARGE);
-		LinearLayout l = (LinearLayout) d.findViewById(R.id.overlayDialogWebContentContainer);			
-		LayoutParams params = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);					
-		l.addView(wv, params);
-	}
-	protected void configureDialogSize(Dialog d, OverlaySize size) {
-		// get current display size
-		Display display = d.getWindow().getWindowManager().getDefaultDisplay();
-		int width = display.getWidth();
-		int height = display.getHeight();
-		if (size == OverlaySize.LARGE) {
-			width *= 0.95;
-			height *= 0.95;
-		} else if (size == OverlaySize.MEDIUM) {
-			width *= 0.75;
-			height *= 0.75;
-		} else {
-			width *= 0.5;
-			height *= 0.5;
-		}
-		// update size attributes
-		WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-		lp.copyFrom(d.getWindow().getAttributes());
-		lp.width = width;
-		lp.height = height;
-		d.getWindow().setAttributes(lp);
-		d.show();
-	}
 }

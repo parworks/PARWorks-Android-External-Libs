@@ -46,6 +46,7 @@ import com.parworks.androidlibrary.ar.ARListener;
 import com.parworks.androidlibrary.ar.ARSite;
 import com.parworks.androidlibrary.ar.AugmentedData;
 import com.parworks.androidlibrary.ar.Overlay;
+import com.parworks.androidlibrary.response.SiteInfo;
 import com.parworks.androidlibrary.response.photochangedetection.ChangeDetectionResultData;
 import com.parworks.arviewer.ARViewerActivity;
 import com.parworks.arviewer.utils.ImageUtils;
@@ -781,6 +782,32 @@ Camera.PictureCallback {
 			}
 		}
 	}
+	
+	private void startARViewer(SiteInfo info, AugmentedData data) {
+		progressBar.dismiss();
+		Intent intent = new Intent(
+				CaptureImageActivity.this,
+				ARViewerActivity.class);
+		intent.putExtra("image-id",	augmentedImageId);
+		intent.putExtra(ARViewerActivity.EXTRA_POSTER_IMAGE_URL, info.getPosterImageURL());
+		intent.putExtra("augmented-data", data);
+		intent.putExtra("show-overlay", true);
+		intent.putExtra("file-path", currentImagePath);
+		intent.putExtra("original-size", ImageUtils
+				.getImageSize(currentImagePath));
+		startActivity(intent);
+	}
+	
+	private void handleAugmentationError(Exception error) {
+		Log.w(TAG, "Failed to augment the image: "
+				+ error.getMessage());
+		Toast.makeText(
+				CaptureImageActivity.this,
+				"Failed to augment the image. Try again.",
+				Toast.LENGTH_LONG).show();
+		progressBar.dismiss();
+		resetCamera();
+	}
 
 	private void augmentImage(final InputStream img) {
 		// call to augment
@@ -788,93 +815,97 @@ Camera.PictureCallback {
 		ARClient.getARSites().getExisting(currentSiteId,
 				new ARListener<ARSite>() {
 			@Override
-			public void handleResponse(ARSite resp) {
+			public void handleResponse(final ARSite site) {
 
 				Log.i(TAG, "Augmenting image for " + currentSiteId);
 				progressBar.show();
-				resp.augmentImage(img, new ARListener<AugmentedData>() {
+				site.augmentImage(img, new ARListener<AugmentedData>() {
 					@Override
 					public void handleResponse(final AugmentedData resp) {
 						Log.i(TAG, "Localization: "	+ resp.isLocalization());
+						
+						site.getSiteInfo(new ARListener<SiteInfo>() {
 
-						progressBar.dismiss();
-						if (resp.isLocalization()) {
-							Intent intent = new Intent(
-									CaptureImageActivity.this,
-									ARViewerActivity.class);
-							intent.putExtra("image-id",	augmentedImageId);
-							intent.putExtra("augmented-data", resp);
-							intent.putExtra("show-overlay", true);
-							intent.putExtra("file-path", currentImagePath);
-							intent.putExtra("original-size", ImageUtils
-									.getImageSize(currentImagePath));
-							startActivity(intent);
-						} else {
-							Toast.makeText(
-									CaptureImageActivity.this,
-									"Nothing to augment for this image. Try again.",
-									Toast.LENGTH_LONG).show();
-							resetCamera();
-						}
+							@Override
+							public void handleResponse(SiteInfo info) {
+								progressBar.dismiss();
+								if (resp.isLocalization()) {
+									startARViewer(info, resp);
+								} else {
+									Toast.makeText(
+											CaptureImageActivity.this,
+											"Nothing to augment for this image. Try again.",
+											Toast.LENGTH_LONG).show();
+									resetCamera();
+								}
+								
+							}
+							
+						}, new ARErrorListener() {
+
+							@Override
+							public void handleError(Exception error) {
+								handleAugmentationError(error);
+								
+							}
+							
+						});
 					}
 				}, new ARErrorListener() {
 					@Override
 					public void handleError(Exception error) {
-						Log.w(TAG, "Failed to augment the image: "
-								+ error.getMessage());
-						progressBar.dismiss();
-						resetCamera();
+						handleAugmentationError(error);
 					}
 				});
 			}
 		}, new ARErrorListener() {
 			@Override
 			public void handleError(Exception error) {
-				Log.w(TAG, "Failed to get existing site: "
-						+ currentSiteId);
-				resetCamera();
+				handleAugmentationError(error);
 			}
 		});
 
 	}
 	
 	private void augmentForChangeDetection(final InputStream img) {
+		Log.d(TAG,"augmentForChangeDetection()");
 		// call to augment
 
 		ARClient.getARSites().getExisting(currentSiteId,
 				new ARListener<ARSite>() {
 			@Override
-			public void handleResponse(ARSite resp) {
+			public void handleResponse(final ARSite site) {
 
 				Log.i(TAG, "Change detection image for " + currentSiteId);
 				progressBar.show();
 				
-				resp.sendPhotoDetectChangesAsync(img, new ARListener<ChangeDetectionResultData>() {
+				site.sendPhotoDetectChangesAsync(img, new ARListener<ChangeDetectionResultData>() {
 					
 					@Override
-					public void handleResponse(ChangeDetectionResultData data) {
-
-						progressBar.dismiss();
-						Intent intent = new Intent(
-								CaptureImageActivity.this,
-								ARViewerActivity.class);
-						intent.putExtra("image-id",	augmentedImageId);
-						intent.putExtra("augmented-data", data.getAugmentedData());
-						intent.putExtra("show-overlay", true);
-						intent.putExtra("file-path", currentImagePath);
-						intent.putExtra("original-size", ImageUtils
-								.getImageSize(currentImagePath));
-						startActivity(intent);
+					public void handleResponse(final ChangeDetectionResultData data) {
+						
+						site.getSiteInfo(new ARListener<SiteInfo>() {
+							
+							@Override
+							public void handleResponse(SiteInfo info) {
+								startARViewer(info,data.getAugmentedData());
+								
+							}
+						}, new ARErrorListener() {
+							
+							@Override
+							public void handleError(Exception error) {
+								handleAugmentationError(error);
+								
+							}
+						});
 						
 					}
 				}, new ARErrorListener() {
 					
 					@Override
 					public void handleError(Exception error) {
-						Log.w(TAG, "Failed to augment the image: "
-								+ error.getMessage());
-						progressBar.dismiss();
-						resetCamera();
+						handleAugmentationError(error);
 						
 					}
 				});
@@ -882,9 +913,7 @@ Camera.PictureCallback {
 		}, new ARErrorListener() {
 			@Override
 			public void handleError(Exception error) {
-				Log.w(TAG, "Failed to get existing site: "
-						+ currentSiteId);
-				resetCamera();
+				handleAugmentationError(error);
 			}
 		});
 

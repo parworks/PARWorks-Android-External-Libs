@@ -78,6 +78,8 @@ public class ARViewerActivity extends SherlockActivity implements View.OnClickLi
 	private static final float BOUNDARY_MARGIN_FACTOR = 1 / 5f;
 	private static final float BOUNDARY_EFFECT_DURATION = 200; // millisecond
 	private static final float FRAME_RATE = 64; // frames per second
+	
+	public static final String EXTRA_POSTER_IMAGE_URL = "posterImageUrl";
 
 	// Detectors for pan/drag and pinch-zoom
 	private GestureDetector mGestureDetector;
@@ -132,6 +134,7 @@ public class ARViewerActivity extends SherlockActivity implements View.OnClickLi
 	private List<ImageOverlayInfo> mActiveOverlays = null;
 	private String mActiveOverlayGroup;
 	private OverlayGroups mOverlayGroups;	
+	private String mPosterImageUrl;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -150,6 +153,7 @@ public class ARViewerActivity extends SherlockActivity implements View.OnClickLi
 		imageId = args.getString("image-id");
 		imagePath = args.getString("file-path");
 		augmentedData = (AugmentedData) args.get("augmented-data");
+		mPosterImageUrl = args.getString(EXTRA_POSTER_IMAGE_URL);
 
 		String originalAugmentationSize = args.getString("original-size");
 		if (originalAugmentationSize != null
@@ -190,7 +194,10 @@ public class ARViewerActivity extends SherlockActivity implements View.OnClickLi
 			
 			@Override
 			public void onClick(View v) {
-				displayImageInWebView("https://s3.amazonaws.com/hd4ar-dev-us-east-1/physical_models/Chevy-trailblazer-tire/images/1fdc6705-5d3a-42ca-9057-ec042e67db33.jpg");
+				if(mPosterImageUrl == null) {
+					return;
+				}
+				displayImageInWebView(mPosterImageUrl);
 				
 			}
 		});

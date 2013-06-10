@@ -888,6 +888,8 @@ Camera.PictureCallback {
 							
 							@Override
 							public void handleResponse(SiteInfo info) {
+								Log.d(TAG,"Change detection result data: " + data.toString());
+								Log.d(TAG,"Augmented data: " + data.getAugmentedData().toString());
 								startARViewer(info,data.getAugmentedData());
 								
 							}

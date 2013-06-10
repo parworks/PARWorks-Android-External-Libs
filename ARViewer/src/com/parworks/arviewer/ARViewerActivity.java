@@ -25,6 +25,7 @@ import org.taptwo.android.widget.TitleFlowIndicator;
 import org.taptwo.android.widget.ViewFlow;
 import org.taptwo.android.widget.ViewFlow.ViewSwitchListener;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -44,8 +45,12 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.WebView;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
@@ -57,6 +62,7 @@ import com.parworks.androidlibrary.ar.BaseImage;
 import com.parworks.androidlibrary.ar.Overlay;
 import com.parworks.androidlibrary.ar.Vertex;
 import com.parworks.androidlibrary.response.ImageOverlayInfo;
+import com.parworks.androidlibrary.response.OverlayContent.OverlaySize;
 import com.parworks.androidlibrary.response.OverlayPoint;
 import com.parworks.arviewer.utils.ImageUtils;
 

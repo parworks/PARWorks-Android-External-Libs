@@ -53,7 +53,7 @@ public class CameraParameters {
 			.with("config-super-dense", new ImageQuality(-1, 70))
 			.with("config-accurate", new ImageQuality(1024, 50))
 			.with("config-super-accurate", new ImageQuality(1024, 40))
-			.with("default", new ImageQuality(1024, 50)).build();  // TEST OUT THIS
+			.with("default", new ImageQuality(1024, 100)).build();  // TEST OUT THIS
 
 	public static final String[] SUPPORT_PARAMS = { "picture-size",
 			"picture-size-values", "focus-mode", "focus-mode-values",
@@ -100,8 +100,8 @@ public class CameraParameters {
 		if (qual.minEdge > -1) {
 			Point curr = pictureSize;
 			for (Point q : supportedPictureSizes) {
-				if (q.x > qual.minEdge && q.y > qual.minEdge && curr.x > q.x
-						&& curr.y > q.y) {
+				if (q.x > qual.minEdge && q.y > qual.minEdge && curr.x < q.x
+						&& curr.y < q.y) {
 					curr = q;
 				}
 			}

@@ -27,20 +27,22 @@ public class OverlayGroups {
 		mGroupNames = new ArrayList<String>();
 		mOverlays = new HashMap<String, List<ImageOverlayInfo>>();
 		
-		for(ImageOverlayInfo overlay : overlays){
-			String group = getGroupName(overlay);
-			if(group != null){
-				if( mOverlays.get(group) == null){
-					mGroupNames.add(group);
-				}
-				getOverlaysForGroup(group).add(overlay);
-			}
-		}
-		
-		Collections.sort(mGroupNames);
-		
 		mGroupNames.add("All");
 		getOverlaysForGroup("All").addAll(overlays);
+		
+//		for(ImageOverlayInfo overlay : overlays){
+//			String group = getGroupName(overlay);
+//			if(group != null){
+//				if( mOverlays.get(group) == null){
+//					mGroupNames.add(group);
+//				}
+//				getOverlaysForGroup(group).add(overlay);
+//			}
+//		}
+//		
+//		Collections.sort(mGroupNames);
+		
+
 	}
 	
 	public String getGroupName(ImageOverlayInfo overlay){

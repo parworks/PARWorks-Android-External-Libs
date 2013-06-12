@@ -37,7 +37,7 @@ import com.parworks.androidlibrary.response.OverlayCover.OverlayCoverType;
  */
 public class OverlayCoverView extends ShapeDrawable {
 
-	private static final int STROKE_WIDTH = 10;
+	private static final int STROKE_WIDTH = 20;
 	private static final int DEFAULT_STROKE_COLOR = Color.CYAN;
 	private static final int DEFAULT_COVER_COLOR = Color.WHITE;
 	private static final int DEFAULT_COVER_TRANSPARENCY = 100; //0 to 255
